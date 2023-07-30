@@ -1,0 +1,56 @@
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+
+# Load the AirPassengers dataset (monthly international airline passengers data)
+data = sm.datasets.get_rdataset('AirPassengers').data
+
+# Convert the "Month" column to datetime format
+data['Month'] = pd.to_datetime(data['Month'])
+
+# Sort the data by the "Month" column (required for time series analysis)
+data.sort_values(by='Month', inplace=True)
+
+# Create a list to store the linear regression models
+regression_models = []
+
+# Perform linear regression on subsets of the data based on the year
+for year in np.unique(data['Month'].dt.year):
+    # Subset the data for the current year
+    data_subset = data[data['Month'].dt.year == year]
+
+    # Create a time series linear regression model and fit it to the subset of data
+    X_subset = sm.add_constant(data_subset['time_trend'])  # Time trend as an independent variable
+    y_subset = data_subset['AirPassengers']  # Number of passengers as the dependent variable
+    model = sm.OLS(y_subset, X_subset).fit()
+
+    # Store the model in the list
+    regression_models.append(model)
+
+# Example usage:
+# Let's say we want to predict the number of passengers for a new month (X_new)
+X_new = pd.DataFrame({'time_trend': [len(data) + 1]})  # Replace this with your own data
+predicted_values = []
+
+# Use the stored regression models to make predictions for each subset
+for model in regression_models:
+    X_new_subset = sm.add_constant(X_new['time_trend'])  # Time trend as an independent variable
+    prediction = model.predict(X_new_subset)
+    predicted_values.append(prediction.values[0])
+
+# Print the predicted values for each year
+for i, year in enumerate(np.unique(data['Month'].dt.year)):
+    print(f"Predicted number of passengers for year {year + 1}: {predicted_values[i]}")
+
+# Plot the time series linear regression for each year
+plt.figure(figsize=(10, 6))
+for i, year in enumerate(np.unique(data['Month'].dt.year)):
+    data_subset = data[data['Month'].dt.year == year]
+    plt.plot(data_subset['Month'], data_subset['AirPassengers'], label=f"Year {year + 1} Actual")
+    plt.plot(X_new, predicted_values[i], 'ro', label=f"Year {year + 1} Predicted")
+plt.xlabel('Time')
+plt.ylabel('Number of Passengers')
+plt.legend()
+plt.title('Time Series Linear Regression')
+plt.show()
