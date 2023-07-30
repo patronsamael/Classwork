@@ -1,0 +1,59 @@
+import numpy as np
+from scipy import stats
+
+# Sample data for group A and group B (replace with your own data)
+data_A = np.array([23, 26, 29, 33, 27, 31, 30, 25, 28, 32])
+data_B = np.array([35, 38, 40, 34, 36, 37, 39, 42, 41, 43])
+
+# Population standard deviation (replace with your known value if available)
+population_std_dev = None
+
+# Number of bootstrap samples for the Central Limit Theorem
+num_bootstrap_samples = 1000
+
+# Perform the z-test for large sample sizes (population standard deviation known)
+z_statistic, p_value_z = stats.ztest(data_A, data_B, value=0, alternative='two-sided', ddof=0)
+
+# Perform the t-test for smaller sample sizes (population standard deviation unknown)
+t_statistic, p_value_t = stats.ttest_ind(data_A, data_B)
+
+# Perform the bootstrap for Central Limit Theorem
+def perform_bootstrap(data_A, data_B, num_samples):
+    combined_data = np.concatenate((data_A, data_B))
+    bootstrap_statistics = []
+    for _ in range(num_samples):
+        bootstrap_sample = np.random.choice(combined_data, size=len(combined_data), replace=True)
+        bootstrap_statistic = np.mean(bootstrap_sample[:len(data_A)]) - np.mean(bootstrap_sample[len(data_A):])
+        bootstrap_statistics.append(bootstrap_statistic)
+    return bootstrap_statistics
+
+bootstrap_statistics = perform_bootstrap(data_A, data_B, num_bootstrap_samples)
+p_value_clt = np.mean(np.abs(bootstrap_statistics) >= np.abs(np.mean(data_A) - np.mean(data_B)))
+
+# Set the significance level (alpha) for the hypothesis tests
+alpha = 0.05
+
+# Interpret the results
+print("Frequentist Inference Results:")
+print(f"Z-Statistic: {z_statistic}")
+print(f"P-Value (Z-Test): {p_value_z}")
+
+print(f"T-Statistic: {t_statistic}")
+print(f"P-Value (T-Test): {p_value_t}")
+
+print(f"P-Value (Central Limit Theorem): {p_value_clt}")
+
+if p_value_z < alpha:
+    print("Reject the null hypothesis (Z-Test). There is a significant difference between groups A and B.")
+else:
+    print("Fail to reject the null hypothesis (Z-Test). There is no significant difference between groups A and B.")
+
+if p_value_t < alpha:
+    print("Reject the null hypothesis (T-Test). There is a significant difference between groups A and B.")
+else:
+    print("Fail to reject the null hypothesis (T-Test). There is no significant difference between groups A and B.")
+
+if p_value_clt < alpha:
+    print("Reject the null hypothesis (Central Limit Theorem). There is a significant difference between groups A and B.")
+else:
+    print("Fail to reject the null hypothesis (Central Limit Theorem). There is no significant difference between groups A and B.")
