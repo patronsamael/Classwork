@@ -1,0 +1,40 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+
+# Load your dataset or create a sample dataset for demonstration
+# Replace X and y with your features and target variables, respectively.
+# X = ...
+# y = ...
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create a KNN classifier
+knn = KNeighborsClassifier()
+
+# Define a range of neighbors to try for the grid search
+param_grid = {'n_neighbors': np.arange(1, 11)}
+
+# Perform the grid search using cross-validation
+grid_search = GridSearchCV(knn, param_grid, cv=5)
+grid_search.fit(X_train, y_train)
+
+# Get the best number of neighbors and corresponding mean cross-validated score
+best_neighbors = grid_search.best_params_['n_neighbors']
+best_score = grid_search.best_score_
+
+print(f"Best number of neighbors: {best_neighbors}")
+print(f"Best cross-validated score: {best_score:.2f}")
+
+# Train the KNN model with the best number of neighbors on the entire training set
+best_knn = KNeighborsClassifier(n_neighbors=best_neighbors)
+best_knn.fit(X_train, y_train)
+
+# Evaluate the model on the test set
+y_pred = best_knn.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+
+print(f"Test set accuracy with best neighbors: {accuracy:.2f}")
