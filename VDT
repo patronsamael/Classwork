@@ -1,0 +1,39 @@
+import pandas as pd
+
+# Randomly generated data for illustration purposes
+data = {
+    'Production_Volume': [10000, 12000, 15000],
+    'Mineral_Price': [50, 55, 60],
+    'Production_Costs': [4000000, 4500000, 5000000],
+    'Logistics_Costs': [200000, 220000, 250000],
+    'Exploration_Costs': [500000, 550000, 600000],
+}
+
+# Creating a DataFrame from the data
+df = pd.DataFrame(data)
+
+# Calculate revenue and profitability
+df['Revenue'] = df['Production_Volume'] * df['Mineral_Price']
+df['Operating_Costs'] = df['Production_Costs'] + df['Logistics_Costs']
+df['Fixed_Costs'] = df['Exploration_Costs']
+df['Variable_Costs'] = df['Production_Costs'] + df['Logistics_Costs']
+df['Total_Costs'] = df['Fixed_Costs'] + df['Variable_Costs']
+df['Profit'] = df['Revenue'] - df['Total_Costs']
+
+# Value Driver Tree
+value_driver_tree = {
+    'Total_Revenue': {
+        'Production_Volume': df['Production_Volume'].tolist(),
+        'Mineral_Price': df['Mineral_Price'].tolist(),
+        'Revenue': df['Revenue'].tolist()
+    },
+    'Total_Costs': {
+        'Fixed_Costs': df['Fixed_Costs'].tolist(),
+        'Variable_Costs': df['Variable_Costs'].tolist(),
+        'Total_Costs': df['Total_Costs'].tolist()
+    },
+    'Profit': df['Profit'].tolist()
+}
+
+# Display the Value Driver Tree
+print(value_driver_tree)
