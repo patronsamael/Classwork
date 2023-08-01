@@ -1,0 +1,42 @@
+import sqlite3
+import hashlib
+from tabulate import tabulate
+
+class AssetManager:
+    def __init__(self, database_file, difficulty=2):
+        self.conn = sqlite3.connect(database_file)
+        self.cursor = self.conn.cursor()
+        self.difficulty = difficulty
+        self.create_table()
+
+    # Rest of the class remains the same...
+
+    def delete_assets_by_status(self, status):
+        self.cursor.execute('''
+            DELETE FROM assets
+            WHERE status = ?
+        ''', (status,))
+        self.conn.commit()
+
+def main():
+    asset_manager = AssetManager('assets.db')
+
+    # Add assets (PoW will be calculated while adding)
+    asset_manager.add_asset('Server001', 'Server', 'Data Center A', 'Active')
+    asset_manager.add_asset('Printer101', 'Printer', 'Office B', 'Offline')
+
+    # Self-remove asset (Setting status to "Removed" triggers auto-deletion)
+    asset_manager.update_asset(1, 'Server001', 'Server', 'Data Center A', 'Removed')
+
+    # Remove assets with status "Removed" (Self-removing assets)
+    asset_manager.delete_assets_by_status('Removed')
+
+    # Get all assets
+    assets = asset_manager.get_assets()
+    print("All Assets:")
+    print(tabulate(assets, headers=["Asset ID", "Asset Name", "Asset Type", "Location", "Status", "Nonce"], tablefmt="grid"))
+
+    asset_manager.close_connection()
+
+if __name__ == "__main__":
+    main()
