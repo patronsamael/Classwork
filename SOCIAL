@@ -1,0 +1,113 @@
+class Property:
+    def __init__(self, property_id, address, num_rooms, num_bathrooms, area_sqft, status):
+        self.property_id = property_id
+        self.address = address
+        self.num_rooms = num_rooms
+        self.num_bathrooms = num_bathrooms
+        self.area_sqft = area_sqft
+        self.status = status
+        self.listing_price = None
+        self.transactions = []
+
+    def set_listing_price(self, price):
+        self.listing_price = price
+
+    def add_transaction(self, buyer, seller, price):
+        transaction = {
+            'buyer': buyer,
+            'seller': seller,
+            'price': price
+        }
+        self.transactions.append(transaction)
+
+
+class SocialProjectManager:
+    # ... (Previous code for Project, Task, and User classes)
+
+    def create_property(self):
+        property_id = len(self.projects) + 1
+        address = input("Enter property address: ")
+        num_rooms = int(input("Enter number of rooms: "))
+        num_bathrooms = int(input("Enter number of bathrooms: "))
+        area_sqft = float(input("Enter area in sqft: "))
+        status = "Available"
+        property = Property(property_id, address, num_rooms, num_bathrooms, area_sqft, status)
+        self.projects.append(property)
+        print("Property added successfully!")
+
+    def list_properties(self):
+        for property in self.projects:
+            print(f"Property ID: {property.property_id}, Address: {property.address}, Status: {property.status}")
+
+    def view_property_details(self, property_id):
+        property = self.find_project_by_id(property_id)
+        if property:
+            print(f"Property ID: {property.property_id}")
+            print(f"Address: {property.address}")
+            print(f"Number of Rooms: {property.num_rooms}")
+            print(f"Number of Bathrooms: {property.num_bathrooms}")
+            print(f"Area (sqft): {property.area_sqft}")
+            print(f"Status: {property.status}")
+            print(f"Listing Price: {property.listing_price}")
+            print("Transaction History:")
+            for transaction in property.transactions:
+                print(f"Buyer: {transaction['buyer']}, Seller: {transaction['seller']}, Price: {transaction['price']}")
+        else:
+            print("Property not found!")
+
+    def search_properties(self):
+        num_rooms = int(input("Enter number of rooms desired: "))
+        max_price = float(input("Enter maximum price: "))
+        results = []
+        for property in self.projects:
+            if property.num_rooms >= num_rooms and (property.listing_price is None or property.listing_price <= max_price):
+                results.append(property)
+        if results:
+            print("Search Results:")
+            for property in results:
+                print(f"Property ID: {property.property_id}, Address: {property.address}, Status: {property.status}")
+        else:
+            print("No properties found matching the criteria.")
+
+    def main_menu(self):
+        while True:
+            print("\nSocial Project Management Tool")
+            print("1. Create Project")
+            print("2. Create User")
+            print("3. View Projects")
+            print("4. View Users")
+            print("5. Create Property")
+            print("6. List Properties")
+            print("7. View Property Details")
+            print("8. Search Properties")
+            print("9. Exit")
+
+            choice = input("Enter your choice (1/2/3/4/5/6/7/8/9): ")
+
+            if choice == '1':
+                self.create_project()
+            elif choice == '2':
+                self.create_user()
+            elif choice == '3':
+                self.list_projects()
+            elif choice == '4':
+                self.list_users()
+            elif choice == '5':
+                self.create_property()
+            elif choice == '6':
+                self.list_properties()
+            elif choice == '7':
+                property_id = int(input("Enter Property ID: "))
+                self.view_property_details(property_id)
+            elif choice == '8':
+                self.search_properties()
+            elif choice == '9':
+                print("Exiting...")
+                break
+            else:
+                print("Invalid choice. Please try again!")
+
+
+if __name__ == "__main__":
+    manager = SocialProjectManager()
+    manager.main_menu()
