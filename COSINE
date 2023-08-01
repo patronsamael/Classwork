@@ -1,0 +1,78 @@
+pip install pandas numpy spacy scikit-learn python-Levenshtein
+import pandas as pd
+import numpy as np
+import spacy
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from Levenshtein import distance as levenshtein_distance
+
+# Sample customer data (replace with your own data)
+data = {
+    'Customer_ID': [1, 2, 3, 4],
+    'Name': ['John Doe', 'Jane Smith', 'Bob Johnson', 'Mary Johnson'],
+    'Email': ['john.doe@example.com', 'jane.smith@example.com', 'bob.johnson@example.com', 'mary.johnson@example.com'],
+}
+
+# Convert data to DataFrame
+df = pd.DataFrame(data)
+
+# Record Matching using Cosine Similarity
+def cosine_similarity_match(df, text_column, threshold=0.8):
+    # Create a CountVectorizer to convert text data into vectors
+    vectorizer = CountVectorizer()
+    X = vectorizer.fit_transform(df[text_column])
+    
+    # Calculate the cosine similarity matrix
+    cosine_sim = cosine_similarity(X, X)
+    
+    # Find similar records based on the threshold
+    matches = []
+    for i, row in enumerate(cosine_sim):
+        for j, score in enumerate(row):
+            if i != j and score >= threshold:
+                matches.append((i, j, score))
+                
+    return matches
+
+# Record Matching using Levenshtein Distance
+def levenshtein_distance_match(df, text_column, threshold=3):
+    matches = []
+    for i, text1 in enumerate(df[text_column]):
+        for j, text2 in enumerate(df[text_column]):
+            if i != j and levenshtein_distance(text1, text2) <= threshold:
+                matches.append((i, j, 1.0 / (1.0 + levenshtein_distance(text1, text2))))
+    return matches
+
+# Record Matching using Jaccard Similarity
+def jaccard_similarity_match(df, text_column, threshold=0.5):
+    vectorizer = CountVectorizer(binary=True)
+    X = vectorizer.fit_transform(df[text_column])
+    jaccard_sim = np.dot(X, X.T).toarray()
+    
+    matches = []
+    for i in range(len(df)):
+        for j in range(i+1, len(df)):
+            if jaccard_sim[i, j] >= threshold:
+                matches.append((i, j, jaccard_sim[i, j]))
+    return matches
+
+# Run all record matching algorithms
+cosine_matches = cosine_similarity_match(df, 'Name', threshold=0.8)
+levenshtein_matches = levenshtein_distance_match(df, 'Name', threshold=3)
+jaccard_matches = jaccard_similarity_match(df, 'Name', threshold=0.5)
+
+# Print matched records for each algorithm
+print("Cosine Similarity Matches:")
+for match in cosine_matches:
+    idx1, idx2, score = match
+    print(f"Match found between '{df['Name'][idx1]}' and '{df['Name'][idx2]}' with similarity score {score:.2f}")
+
+print("\nLevenshtein Distance Matches:")
+for match in levenshtein_matches:
+    idx1, idx2, score = match
+    print(f"Match found between '{df['Name'][idx1]}' and '{df['Name'][idx2]}' with similarity score {score:.2f}")
+
+print("\nJaccard Similarity Matches:")
+for match in jaccard_matches:
+    idx1, idx2, score = match
+    print(f"Match found between '{df['Name'][idx1]}' and '{df['Name'][idx2]}' with similarity score {score:.2f}")
