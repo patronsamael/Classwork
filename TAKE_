@@ -1,0 +1,181 @@
+import json
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def load_data(file_name):
+    try:
+        with open(file_name, 'r') as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        data = {}
+    return data
+
+def save_data(data, file_name):
+    with open(file_name, 'w') as file:
+        json.dump(data, file)
+
+def add_entry(data, key, value):
+    data[key] = value
+
+def get_entry(data, key):
+    return data.get(key, None)
+
+def delete_entry(data, key):
+    if key in data:
+        del data[key]
+
+def list_entries(data):
+    for key, value in data.items():
+        print(f"{key}: {value}")
+
+def load_spreadsheet(file_name):
+    df = pd.read_excel(file_name)
+    return df
+
+def analyze_financials(df):
+    print("Financial Analysis:")
+    # Perform financial analysis using the DataFrame (e.g., calculate averages, sums, etc.)
+    # Example: Average revenue
+    avg_revenue = df["Revenue"].mean()
+    print(f"Average Revenue: {avg_revenue}")
+
+def calculate_npv(df, initial_investment, discount_rate):
+    cash_flows = df["Cash Flow"].tolist()
+    cash_flows.insert(0, -initial_investment)
+    npv = sum([cf / (1 + discount_rate)**t for t, cf in enumerate(cash_flows)])
+    return npv
+
+def calculate_irr(df, initial_investment):
+    cash_flows = df["Cash Flow"].tolist()
+    cash_flows.insert(0, -initial_investment)
+    irr = round((sum(cash_flows) - initial_investment) / initial_investment, 4)
+    return irr
+
+def calculate_payback_period(df, initial_investment):
+    cash_flows = df["Cash Flow"].tolist()
+    remaining_investment = initial_investment
+    payback_period = 0
+    for t, cf in enumerate(cash_flows):
+        remaining_investment += cf
+        if remaining_investment >= 0:
+            payback_period = t
+            break
+    return payback_period
+
+def risk_profiling(df):
+    print("Risk Profiling:")
+    # Perform risk profiling based on the DataFrame
+    # Example: Calculate risk metrics or risk scores
+
+def visualize_data(df):
+    # Example visualization: Plotting financial data
+    df.plot(x='Year', y=['Revenue', 'Expenses', 'Profit'], kind='bar', figsize=(10, 6))
+    plt.xlabel('Year')
+    plt.ylabel('Amount')
+    plt.title('Financial Performance')
+    plt.legend()
+    plt.show()
+
+def manage_portfolio():
+    print("Portfolio Management:")
+    # Implement portfolio management functions, e.g., portfolio allocation, rebalancing, etc.
+
+def main():
+    file_name = "data.json"
+    data = load_data(file_name)
+
+    while True:
+        print("\nData Management Menu:")
+        print("1. Add Entry")
+        print("2. Get Entry")
+        print("3. Delete Entry")
+        print("4. List Entries")
+        print("5. Load Financial Spreadsheet")
+        print("6. Analyze Financials")
+        print("7. Calculate NPV")
+        print("8. Calculate IRR")
+        print("9. Calculate Payback Period")
+        print("10. Risk Profiling")
+        print("11. Visualize Data")
+        print("12. Manage Portfolio")
+        print("13. Save and Exit")
+        
+        choice = input("Enter your choice (1/2/3/4/5/6/7/8/9/10/11/12/13): ")
+
+        if choice == '1':
+            key = input("Enter key: ")
+            value = input("Enter value: ")
+            add_entry(data, key, value)
+            print("Entry added successfully!")
+
+        elif choice == '2':
+            key = input("Enter key: ")
+            value = get_entry(data, key)
+            if value is not None:
+                print(f"Value for key '{key}': {value}")
+            else:
+                print("Entry not found!")
+
+        elif choice == '3':
+            key = input("Enter key to delete: ")
+            delete_entry(data, key)
+            print("Entry deleted successfully!")
+
+        elif choice == '4':
+            list_entries(data)
+
+        elif choice == '5':
+            file_name = input("Enter the spreadsheet file name: ")
+            try:
+                financial_df = load_spreadsheet(file_name)
+                print("Financial spreadsheet loaded successfully!")
+            except FileNotFoundError:
+                print("File not found. Please check the file name and path.")
+
+        elif choice == '6':
+            try:
+                analyze_financials(financial_df)
+            except NameError:
+                print("Please load the financial spreadsheet first using option 5.")
+
+        elif choice == '7':
+            initial_investment = float(input("Enter the initial investment: "))
+            discount_rate = float(input("Enter the discount rate (as decimal): "))
+            npv = calculate_npv(financial_df, initial_investment, discount_rate)
+            print(f"Net Present Value (NPV): {npv:.2f}")
+
+        elif choice == '8':
+            initial_investment = float(input("Enter the initial investment: "))
+            irr = calculate_irr(financial_df, initial_investment)
+            print(f"Internal Rate of Return (IRR): {irr:.2%}")
+
+        elif choice == '9':
+            initial_investment = float(input("Enter the initial investment: "))
+            payback_period = calculate_payback_period(financial_df, initial_investment)
+            print(f"Payback Period: {payback_period} years")
+
+        elif choice == '10':
+            try:
+                risk_profiling(financial_df)
+            except NameError:
+                print("Please load the financial spreadsheet first using option 5.")
+
+        elif choice == '11':
+            try:
+                visualize_data(financial_df)
+            except NameError:
+                print("Please load the financial spreadsheet first using option 5.")
+
+        elif choice == '12':
+            manage_portfolio()
+
+        elif choice == '13':
+            save_data(data, file_name)
+            print("Data saved. Exiting...")
+            break
+
+        else:
+            print("Invalid choice. Please try again!")
+
+if __name__ == "__main__":
+    main()
