@@ -1,0 +1,44 @@
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import OneHotEncoder
+
+# Sample data for the decision-making problem
+# Replace this with your actual data
+# Features: price, demand, competitor_price, category
+# Target: buy (1) or not buy (0)
+X = [[10, 20, 8, 'A'], [15, 22, 9, 'B'], [8, 18, 7, 'A'], [12, 25, 10, 'C'], [14, 19, 9, 'B']]
+y = [1, 1, 0, 1, 0]
+
+# Convert the categorical feature "category" using one-hot encoding
+encoder = OneHotEncoder(sparse=False, drop='first')  # drop='first' to avoid multicollinearity
+X_encoded = encoder.fit_transform(X)
+
+# Split the data into training and testing sets
+# Use 80% of the data for training and 20% for testing
+X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.2, random_state=42)
+
+# Create the Random Forest classifier with 100 trees and a maximum depth of 3
+max_tree_depth = 3
+n_estimators = 100
+rf_clf = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_tree_depth)
+
+# Train the Random Forest classifier on the training data
+rf_clf.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred = rf_clf.predict(X_test)
+
+# Calculate the accuracy of the model
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+
+# Example: Use the trained model to make a decision for new data
+new_data = [[11, 21, 9, 'B']]
+# Convert the new data using one-hot encoding
+new_data_encoded = encoder.transform(new_data)
+decision = rf_clf.predict(new_data_encoded)
+if decision[0] == 1:
+    print("Decision: Buy")
+else:
+    print("Decision: Do Not Buy")
